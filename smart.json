@@ -1,0 +1,8 @@
+{
+  "name": "rally-oauth",
+  "description": "OAuth 2.0 services for Rally accounts.",
+  "homepage": "https://github.com/shalka/meteor-rally-oauth",
+  "author": "Stanley Halka (https://github.com/shalka)",
+  "version": "0.0.1",
+  "git": "https://github.com/shalka/meteor-rally-oauth.git"
+}
