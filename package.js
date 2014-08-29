@@ -1,8 +1,11 @@
 Package.describe({
-  summary: "OAuth 2.0 services for Rally accounts."
+  summary: "OAuth 2.0 services for Rally accounts.",
+  version: "0.0.2",
+  git: "https://github.com/shalka/meteor-rally-oauth.git"
 });
 
 Package.on_use(function(api) {
+  api.versionsFrom("METEOR@0.9.0");
   api.use('oauth', ['client', 'server']);
   api.use('oauth2', ['client', 'server']);
   api.use('http', ['client', 'server']);
