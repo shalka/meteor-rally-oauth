@@ -3,6 +3,6 @@
   "description": "OAuth 2.0 services for Rally accounts.",
   "homepage": "https://github.com/shalka/meteor-rally-oauth",
   "author": "Stanley Halka (https://github.com/shalka)",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "git": "https://github.com/shalka/meteor-rally-oauth.git"
 }
