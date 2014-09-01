@@ -6,8 +6,8 @@ OAuth 2.0 services for Rally accounts.
 ##Installation
 
 Install accounts-ui and rally-oauth packages:
-* `mrt accounts-ui`
-* `mrt add rally-oauth`
+* `meteor add accounts-ui`
+* `meteor add shalka:rally-oauth`
 
 ##Usage
 
