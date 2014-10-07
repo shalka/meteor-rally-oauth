@@ -1,6 +1,6 @@
 Package.describe({
   summary: "OAuth 2.0 services for Rally accounts.",
-  version: "0.0.2",
+  version: "0.0.3",
   git: "https://github.com/shalka/meteor-rally-oauth.git"
 });
 
