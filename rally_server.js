@@ -102,8 +102,7 @@ var getAccessToken = function (query) {
 
   var responseContent;
   try {
-    // Request access token
-    responseContent = Meteor.http.post(
+    var response = Meteor.http.post(
       "https://rally1.rallydev.com/login/oauth2/token", {
         params: {
           grant_type: 'authorization_code',
@@ -112,7 +111,8 @@ var getAccessToken = function (query) {
           code: query.code,
           redirect_uri: Meteor.absoluteUrl("_oauth/rally?close")
         }
-      }).content;
+      });
+    responseContent = response.content;
   } catch (err) {
     throw new Error("Failed to complete OAuth handshake with Rally. " + err.message);
   }
