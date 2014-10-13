@@ -106,7 +106,7 @@ var getAccessToken = function (query) {
 
   var responseData;
   try {
-    var wsapiBaselUrl = getWsapiBaseUrl();
+    var wsapiBaseUrl = getWsapiBaseUrl();
     var tokenUrl = wsapiBaseUrl.split('/').slice(0, 3).join('/').concat('/login/oauth2/token');
     var response = Meteor.http.post(tokenUrl, {
         params: {
@@ -161,7 +161,7 @@ var getIdentity = function (accessToken) {
   }
 };
 
-var getUserProfile = function(accessToken, rallyUserProfileUrl) {
+var getUserProfile = function (accessToken, rallyUserProfileUrl) {
   try {
     // need to pass zsessionid header (acts as bearer token) to retrieve user information
     return Meteor.http.get(rallyUserProfileUrl, {headers: {zsessionid: accessToken, format: 'json'}}).data;
@@ -170,7 +170,7 @@ var getUserProfile = function(accessToken, rallyUserProfileUrl) {
   }
 };
 
-var getWsapiBaseUrl = function() {
+var getWsapiBaseUrl = function () {
   // default to rally production WSAPI
   var wsapiBaseUrl = 'https://rally1.rallydev.com/slm/webservice/v2.x';
   var settings = Meteor.settings;
