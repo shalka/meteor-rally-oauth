@@ -18,7 +18,7 @@ Rally.requestCredential = function (options, credentialRequestCompleteCallback) 
 
   var state = Random.secret();
   var scope = [];
-  
+
   if (options && options.requestPermissions) {
     scope = options.requestPermissions.join('+');
   } else {
@@ -26,13 +26,25 @@ Rally.requestCredential = function (options, credentialRequestCompleteCallback) 
     scope = 'alm';
   }
 
-  var loginUrl =
-        'https://rally1.rallydev.com/login/oauth2/auth?' +
+  var wsapiBaseUrl = getWsapiBaseUrl();
+  var authBaseUrl = wsapiBaseUrl.split('/').slice(0, 3).join('/').concat('/login/oauth2/auth?');
+  var authUrl =
+        authBaseUrl +
         'state=' + state +
         '&response_type=code' +
         '&redirect_uri=' + encodeURIComponent(Meteor.absoluteUrl('_oauth/rally?close')) +
         '&client_id=' + config.client_id +
         '&scope=' + scope;
 
-  Oauth.initiateLogin(state, loginUrl, credentialRequestCompleteCallback);
+  Oauth.initiateLogin(state, authUrl, credentialRequestCompleteCallback);
 };
+
+var getWsapiBaseUrl = function() {
+  // default to rally production WSAPI
+  var wsapiBaseUrl = 'https://rally1.rallydev.com/slm/webservice/v2.x';
+  var settings = Meteor.settings;
+  if (settings.integration && settings.integration.rally) {
+    wsapiBaseUrl = settings.integration.rally.wsapi_base_url;
+  }
+  return wsapiBaseUrl;
+}

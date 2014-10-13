@@ -57,6 +57,7 @@ Oauth.registerService('rally', 2, null, function(query) {
       uuid: userprofile.DefaultProject._refObjectUUID
     };
   }
+
   var data = {
     id: user.ObjectID,
     accessToken: accessToken,
@@ -70,7 +71,10 @@ Oauth.registerService('rally', 2, null, function(query) {
   _.each(identityFields, function(transformedField, identityField) { data[transformedField] = user[identityField]; });
 
   // format of image url will always be: https://rally1.rallydev.com/slm/profile/image/#{User.ObjectID}/80.sp
-  data.picture = 'https://rally1.rallydev.com/slm/profile/image/' + user.ObjectID + '/80.sp';
+  var wsapiBaseUrl = getWsapiBaseUrl();
+  var imageBaseUrl = wsapiBaseUrl.split('/').slice(0, 4).join('/').concat('/profile/image');
+
+  data.picture = [imageBaseUrl, user.ObjectID, '80.sp'].join('/');
   data.locale = 'en';
   data.timezone = userprofile.TimeZone;
 
@@ -100,10 +104,11 @@ var getAccessToken = function (query) {
     throw new ServiceConfiguration.ConfigError("Rally Service not configured");
   }
 
-  var responseContent;
+  var responseData;
   try {
-    var response = Meteor.http.post(
-      "https://rally1.rallydev.com/login/oauth2/token", {
+    var wsapiBaselUrl = getWsapiBaseUrl();
+    var tokenUrl = wsapiBaseUrl.split('/').slice(0, 3).join('/').concat('/login/oauth2/token');
+    var response = Meteor.http.post(tokenUrl, {
         params: {
           grant_type: 'authorization_code',
           client_id: config.client_id,
@@ -112,27 +117,20 @@ var getAccessToken = function (query) {
           redirect_uri: Meteor.absoluteUrl("_oauth/rally?close")
         }
       });
-    responseContent = response.content;
+    responseData = response.data;
   } catch (err) {
     throw new Error("Failed to complete OAuth handshake with Rally. " + err.message);
   }
 
-  var parsedResponse;
-  try {
-    parsedResponse = JSON.parse(responseContent);
-  } catch (e) {
-    throw _.extend(new Error("Failed to complete OAuth handshake with Rally. " + err.message),{response: err.response});
-  }
-
-  // parsed response will resemble:
+  // response data will be:
   // {
   //   token_type: 'Bearer',
   //   expires_in: <number of seconds>,
   //   access_token: '<access token value>',
   //   refresh_token: '<refresh token value>'
   // }
-  var accessToken = parsedResponse.access_token;
-  var expiresIn = parsedResponse.expires_in;
+  var accessToken = responseData.access_token;
+  var expiresIn = responseData.expires_in;
   // intentionally excluding refresh token
 
   if (!accessToken) {
@@ -153,9 +151,11 @@ var getExpiresAt = function (expiresIn) {
 
 var getIdentity = function (accessToken) {
   try {
-    // need to pass zsessionid header (acts as bearer token) to retrieve user information
-    return Meteor.http.get("https://rally1.rallydev.com/slm/webservice/v2.x/user",
-      {headers: {zsessionid: accessToken, format: 'json'}}).data;
+    var wsapiBaseUrl = getWsapiBaseUrl();
+    var identityUrl = [wsapiBaseUrl, 'user'].join('/');
+    // need to pass zsessionid header (acts as bearer token) to retrieve user identity
+    var response = Meteor.http.get(identityUrl, {headers: {zsessionid: accessToken, format: 'json'}});
+    return response.data;
   } catch (err) {
     throw new Error("Failed to fetch identity from Rally. " + err.message);
   }
@@ -169,6 +169,16 @@ var getUserProfile = function(accessToken, rallyUserProfileUrl) {
     throw new Error("Failed to fetch user profile from Rally. " + err.message);
   }
 };
+
+var getWsapiBaseUrl = function() {
+  // default to rally production WSAPI
+  var wsapiBaseUrl = 'https://rally1.rallydev.com/slm/webservice/v2.x';
+  var settings = Meteor.settings;
+  if (settings.integration && settings.integration.rally) {
+    wsapiBaseUrl = settings.integration.rally.wsapi_base_url;
+  }
+  return wsapiBaseUrl;
+}
 
 Rally.retrieveCredential = function(credentialToken) {
   return Oauth.retrieveCredential(credentialToken);
